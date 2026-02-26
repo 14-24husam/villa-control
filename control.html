@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم الذكية</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#020617">
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+</head>
+<body style="background:#020617;color:white;text-align:center;font-family:Tahoma">
+
+<h2>🏠 لوحة التحكم الذكية</h2>
+<div id="status">🔴 غير متصل</div>
+
+<button onclick="send()">تشغيل</button>
+
+<script>
+const key="KjQ9z!_LmN5s@2";
+let client=mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
+
+client.on("connect",()=>{
+document.getElementById("status").innerHTML="🟢 متصل";
+});
+
+function send(){
+client.publish(`husam/test/${key}`,"ON");
+}
+
+if ("serviceWorker" in navigator) {
+navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+
+</body>
+</html>
