@@ -1,35 +1,353 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>لوحة التحكم الذكية</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#020617">
+
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+<style>
+
+body{
+  background:
+  radial-gradient(circle at 20% 20%, #0ea5e9 0%, transparent 25%),
+  radial-gradient(circle at 80% 80%, #22c55e 0%, transparent 25%),
+  linear-gradient(180deg,#020617,#020617,#020617);
+  color:#e5e7eb;
+  font-family:"Segoe UI",Tahoma;
+  text-align:center;
+  direction:rtl;
+  margin:0;
+}
+
+h2{
+  margin-top:20px;
+  font-size:28px;
+  color:#38bdf8;
+  text-shadow:0 0 10px #38bdf8;
+}
+
+.status{
+  margin-top:10px;
+  font-size:14px;
+}
+
+.online{
+  color:#22c55e;
+}
+
+.offline{
+  color:#ef4444;
+}
+
+.section{
+  background: rgba(15,23,42,0.7);
+  border:1px solid rgba(56,189,248,0.2);
+  margin:20px auto;
+  padding:20px;
+  border-radius:18px;
+  width:90%;
+  max-width:500px;
+  backdrop-filter: blur(10px);
+  box-shadow:0 0 15px rgba(56,189,248,0.1);
+}
+
+.section:hover{
+  transform:translateY(-3px);
+  box-shadow:0 0 25px rgba(56,189,248,0.3);
+}
+
+.section h3{
+  color:#facc15;
+  margin-bottom:15px;
+}
+
+button{
+  width:190px;
+  height:50px;
+  margin:6px;
+  border:none;
+  border-radius:12px;
+  font-size:15px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.25s;
+}
+
+button:active{
+  transform:scale(0.92);
+}
+
+.on{
+  background:linear-gradient(145deg,#22c55e,#15803d);
+  color:white;
+}
+
+.off{
+  background:linear-gradient(145deg,#ef4444,#991b1b);
+  color:white;
+}
+
+.console{
+  width:90%;
+  max-width:500px;
+  height:150px;
+  margin:20px auto;
+  background:#020617;
+  border-radius:14px;
+  padding:10px;
+  font-size:12px;
+  color:#38bdf8;
+  overflow-y:auto;
+}
+
+.footer{
+  margin-top:30px;
+  margin-bottom:15px;
+  font-size:11px;
+  color:#64748b;
+}
+
+</style>
+
 </head>
-<body style="background:#020617;color:white;text-align:center;font-family:Tahoma">
+
+<body>
 
 <h2>🏠 لوحة التحكم الذكية</h2>
-<div id="status">🔴 غير متصل</div>
+<div id="status" class="status offline">🔴 غير متصل</div>
 
-<button onclick="send()">تشغيل</button>
+
+<!-- الكراج -->
+<div class="section">
+<h3>الكراج</h3>
+
+<button onclick="send('garage',1,'R1ON')" class="on">تشغيل</button>
+<button onclick="send('garage',1,'R1OFF')" class="off">إيقاف</button>
+
+<button onclick="send('garage',2,'R2ON')" class="on">نافورة تشغيل</button>
+<button onclick="send('garage',2,'R2OFF')" class="off">نافورة إيقاف</button>
+
+<!-- البئر الجديد -->
+<button onclick="sendSpecial('garage','well','R3ON')" class="on">البئر تشغيل</button>
+<button onclick="sendSpecial('garage','well','R3OFF')" class="off">البئر إيقاف</button>
+
+</div>
+
+
+<!-- المسبح -->
+<div class="section">
+<h3>المسبح</h3>
+
+<button onclick="send('pool',1,'R1ON')" class="on">فلتر 1 تشغيل</button>
+<button onclick="send('pool',1,'R1OFF')" class="off">فلتر 1 إيقاف</button>
+
+<button onclick="send('pool',2,'R2ON')" class="on">فلتر 2 تشغيل</button>
+<button onclick="send('pool',2,'R2OFF')" class="off">فلتر 2 إيقاف</button>
+
+<button onclick="send('pool',3,'R3ON')" class="on">إنارة تشغيل</button>
+<button onclick="send('pool',3,'R3OFF')" class="off">إنارة إيقاف</button>
+
+<button onclick="send('pool',4,'R4ON')" class="on">إضافي تشغيل</button>
+<button onclick="send('pool',4,'R4OFF')" class="off">إضافي إيقاف</button>
+
+</div>
+
+
+<!-- البحيرة -->
+<div class="section">
+<h3>البحيرة</h3>
+
+<button onclick="send('lake',1,'R1ON')" class="on">شلال تشغيل</button>
+<button onclick="send('lake',1,'R1OFF')" class="off">شلال إيقاف</button>
+
+<button onclick="send('lake',2,'R2ON')" class="on">فلتر تشغيل</button>
+<button onclick="send('lake',2,'R2OFF')" class="off">فلتر إيقاف</button>
+
+<button onclick="send('lake',3,'R3ON')" class="on">إنارة تشغيل</button>
+<button onclick="send('lake',3,'R3OFF')" class="off">إنارة إيقاف</button>
+
+<button onclick="send('lake',4,'R4ON')" class="on">إضافي تشغيل</button>
+<button onclick="send('lake',4,'R4OFF')" class="off">إضافي إيقاف</button>
+
+</div>
+
+
+<!-- الكوخ -->
+<div class="section">
+<h3>الكوخ</h3>
+
+<button onclick="send('chalet',1,'R1ON')" class="on">إنارة 1 تشغيل</button>
+<button onclick="send('chalet',1,'R1OFF')" class="off">إنارة 1 إيقاف</button>
+
+<button onclick="send('chalet',2,'R2ON')" class="on">إنارة 2 تشغيل</button>
+<button onclick="send('chalet',2,'R2OFF')" class="off">إنارة 2 إيقاف</button>
+
+</div>
+
+
+<!-- غرفة الكومبي -->
+<div class="section">
+<h3>غرفة الكومبي</h3>
+
+<button onclick="sendSpecial('computer','bathroom','BON')" class="on">الحمام تشغيل</button>
+<button onclick="sendSpecial('computer','bathroom','BOFF')" class="off">الحمام إيقاف</button>
+
+<button onclick="sendSpecial('computer','bathroom_extra','BEON')" class="on">حمام إضافي تشغيل</button>
+<button onclick="sendSpecial('computer','bathroom_extra','BEOFF')" class="off">حمام إضافي إيقاف</button>
+
+</div>
+
+
+<!-- الحديقة -->
+<div class="section">
+<h3>الحديقة</h3>
+
+<button onclick="send('garden',1,'R1ON')" class="on">تكحيلة 1 تشغيل</button>
+<button onclick="send('garden',1,'R1OFF')" class="off">تكحيلة 1 إيقاف</button>
+
+<button onclick="send('garden',2,'R2ON')" class="on">تكحيلة 2 تشغيل</button>
+<button onclick="send('garden',2,'R2OFF')" class="off">تكحيلة 2 إيقاف</button>
+
+<button onclick="send('garden',3,'R3ON')" class="on">تكحيلة 3 تشغيل</button>
+<button onclick="send('garden',3,'R3OFF')" class="off">تكحيلة 3 إيقاف</button>
+
+<button onclick="send('garden',4,'R4ON')" class="on">تكحيلة 4 تشغيل</button>
+<button onclick="send('garden',4,'R4OFF')" class="off">تكحيلة 4 إيقاف</button>
+
+</div>
+
+
+<!-- الباب -->
+<div class="section">
+<h3>الباب الرئيسي</h3>
+
+<button class="on"
+onmousedown="doorPress()"
+onmouseup="doorRelease()"
+ontouchstart="doorPress()"
+ontouchend="doorRelease()">
+فتح الباب
+</button>
+
+</div>
+
+
+<div id="log" class="console">
+Console:
+</div>
+
+<div class="footer">
+CREATED BY ENG: HUSAM ALHAJ ALI
+</div>
+
 
 <script>
+
 const key="KjQ9z!_LmN5s@2";
-let client=mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
+
+let client;
+let connected=false;
+
+
+function log(msg){
+
+  const box=document.getElementById("log");
+  box.innerHTML+="<br>"+msg;
+  box.scrollTop=box.scrollHeight;
+
+}
+
+
+function setStatus(state){
+
+  const s=document.getElementById("status");
+
+  if(state){
+
+    s.innerHTML="🟢 متصل";
+    s.className="status online";
+
+  }else{
+
+    s.innerHTML="🔴 غير متصل";
+    s.className="status offline";
+
+  }
+
+}
+
+
+function connect(){
+
+client=mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
 
 client.on("connect",()=>{
-document.getElementById("status").innerHTML="🟢 متصل";
+
+connected=true;
+setStatus(true);
+log("تم الاتصال");
+
 });
 
-function send(){
-client.publish(`husam/test/${key}`,"ON");
+client.on("offline",()=>{
+
+connected=false;
+setStatus(false);
+log("انقطع الاتصال");
+
+});
+
 }
 
-if ("serviceWorker" in navigator) {
-navigator.serviceWorker.register("service-worker.js");
+
+function send(device,relay,command){
+
+if(!connected)return;
+
+const topic=`husam/${device}/relay${relay}/${key}`;
+
+client.publish(topic,command);
+
+log(topic+" → "+command);
+
 }
+
+
+function sendSpecial(device,name,command){
+
+if(!connected)return;
+
+const topic=`husam/${device}/${name}/${key}`;
+
+client.publish(topic,command);
+
+log(topic+" → "+command);
+
+}
+
+
+function doorPress(){
+
+client.publish(`husam/door/control/${key}`,"OPEN");
+log("OPEN");
+
+}
+
+
+function doorRelease(){
+
+client.publish(`husam/door/control/${key}`,"CLOSE");
+log("CLOSE");
+
+}
+
+
+connect();
+
 </script>
 
 </body>
